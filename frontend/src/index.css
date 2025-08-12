@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@import "daisyui";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.flex-snigdha::-webkit-scrollbar{
+    display: none;
+}
+.flex-snigdha{
+    scrollbar-width: none;
+}
