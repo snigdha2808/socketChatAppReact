@@ -12,13 +12,7 @@ function Messages() {
             }} 
             className="hide-scrollbar"
         >
-           <Message />
-           <Message />
-           <Message />
-           <Message />
-           <Message />
-           <Message /><Message />
-           <Message />
+            <Message />
         </div>
     )
 }
