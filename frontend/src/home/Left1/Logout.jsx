@@ -6,7 +6,7 @@ export default function Logout() {
         Logout
         <div className="p-3 align-bottom"></div>
             <button>
-            <TbLogout2 />
+            <TbLogout2 className="text-5xl p-2 hover:bg-gray-600 rounded-lg" />
             </button>
         </div>
     )

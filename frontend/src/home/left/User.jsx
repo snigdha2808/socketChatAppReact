@@ -2,7 +2,16 @@ import Users from "./Users"
 
 function User() {
     return (
-        <div style={{maxHeight: "calc(92vh)", overflowY: "auto"}} className="flex flex-col gap-2">
+        <div 
+            style={{
+                height: "calc(100vh - 200px)",
+                overflowY: "auto",
+                overflowX: "hidden",
+                scrollbarWidth: "none", /* Firefox */
+                msOverflowStyle: "none", /* IE and Edge */
+            }} 
+            className="py-2 px-4 flex-snigdha hide-scrollbar"
+        >
             <Users />
             <Users />
             <Users />
