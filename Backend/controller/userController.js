@@ -1,8 +1,9 @@
-import User from "../models/UserModels.js";
+const User = require("../models/UserModels.js");
+const bcrypt = require("bcryptjs");
 
-export const signup = async (req, res) => {
+const signup = async (req, res) => {
     try{
-    const {name, email, password, confirmpassword} = req.body;
+    const {fullname, email, password, confirmpassword} = req.body;
     if(password !== confirmpassword){
         return res.status(400).json({message: "Passwords do not match"});
     }
@@ -10,7 +11,10 @@ export const signup = async (req, res) => {
     if(user){
         return res.status(400).json({message: "Email already exists"});
     }
-    const newUser = new User({name, email, password, confirmpassword});
+
+    //hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({fullname, email, password: hashedPassword, confirmpassword});
     await newUser.save().then(() => {
         res.status(201).json({message: "User registered successfully", user: newUser});
     }).catch((err) => {
@@ -22,9 +26,19 @@ export const signup = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const {email, password} = req.body;
-    const user = await User.findOne({email});
-    if(!user){
-        return res.status(400).json({message: "User not found"});
+    try {
+        const {email, password} = req.body;
+        const user = await User.findOne({email});
+        if(!user){
+            return res.status(400).json({message: "User not found"});
+        }
+        if(user.password !== password){
+            return res.status(400).json({message: "Invalid password"});
+        }
+        res.status(200).json({message: "Login successful", user: user});
+    } catch (error) {
+        res.status(500).json({message: "Error during login", error: error});
     }
 }
+
+module.exports = { signup, login };

@@ -1,7 +1,8 @@
-import mongoose from "mongoose";
-//template for the user model
+const mongoose = require("mongoose");
+
+// Template for the user model
 const userSchema = new mongoose.Schema({
-    name: {
+    fullname: {
         type: String,
         required: true,
     },
@@ -20,12 +21,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     }
-},
-{
-    timestamps: true,//createdAt and updatedAt
-}
-)
+}, {
+    timestamps: true, // createdAt and updatedAt
+});
 
 const User = mongoose.model("User", userSchema);
 
-export default User;
+module.exports = User;
