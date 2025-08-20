@@ -1,5 +1,6 @@
-const User = require("../models/UserModels.js");
-const bcrypt = require("bcryptjs");
+import User from "../models/UserModels.js";
+import bcrypt from "bcryptjs";
+import generateToken from "../jwt/GenerateToken.js";
 
 const signup = async (req, res) => {
     try{
@@ -14,12 +15,19 @@ const signup = async (req, res) => {
 
     //hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({fullname, email, password: hashedPassword, confirmpassword});
-    await newUser.save().then(() => {
-        res.status(201).json({message: "User registered successfully", user: newUser});
-    }).catch((err) => {
-        res.status(500).json({message: "Error creating user", error: err});
+    const newUser = await new User({
+        fullname,
+        email,
+        password: hashedPassword
     });
+    await newUser.save();
+    if(newUser){
+        generateToken(newUser._id, res);
+        res.status(201).json({message: "User registered successfully", user: newUser});
+    }
+    else{
+        res.status(500).json({message: "Error creating user"});
+    }
     } catch (error) {
         res.status(500).json({message: "Error creating user", error: error});
     }
@@ -29,16 +37,29 @@ const login = async (req, res) => {
     try {
         const {email, password} = req.body;
         const user = await User.findOne({email});
-        if(!user){
-            return res.status(400).json({message: "User not found"});
+        const isMatch = await bcrypt.compare(password, user.password);
+        if(!user || !isMatch){
+            return res.status(400).json({message: "Invalid username or password"});
         }
-        if(user.password !== password){
-            return res.status(400).json({message: "Invalid password"});
-        }
-        res.status(200).json({message: "Login successful", user: user});
+        generateToken(user._id, res);
+        res.status(201).json({message: "Login successful", user : {
+            _id: user._id,
+            fullname: user.fullname,
+            email: user.email
+        }});
     } catch (error) {
+        console.log(error);
         res.status(500).json({message: "Error during login", error: error});
     }
 }
 
-module.exports = { signup, login };
+const logout = async (req, res) => {
+    try {
+        res.cookie("jwt", "", {httpOnly: true, expires: new Date(0)});
+        res.status(200).json({message: "Logged out successfully"});
+    } catch (error) {
+        res.status(500).json({message: "Error during logout", error: error});
+    }
+}
+
+export { signup, login, logout };

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 // Template for the user model
 const userSchema = new mongoose.Schema({
@@ -16,10 +16,6 @@ const userSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true,
-    },
-    confirmpassword: {
-        type: String,
-        required: true,
     }
 }, {
     timestamps: true, // createdAt and updatedAt
@@ -27,4 +23,4 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-module.exports = User;
+export default User;

@@ -1,7 +1,7 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const userRoutes = require("./routes/UserRoute.js");
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import userRoutes from "./routes/UserRoute.js";
 
 const app = express();
 dotenv.config();
