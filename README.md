@@ -1,1 +1,1 @@
-Project useing Socket.io and MERN
+Project using Socket.io and MERN
