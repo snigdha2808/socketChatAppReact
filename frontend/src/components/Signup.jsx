@@ -1,36 +1,45 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthProvider';
 
 export default function Signup() {
   const navigate = useNavigate();
-
+  const { setAuthUser } = useAuth();
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
   } = useForm({
-    mode: "onChange" // This enables real-time validation
+    mode: "onSubmit" // This shows validation errors only on submit
   });
   const password = watch("password");
 
 
   const onSubmit = async (data) => {
-    try {
       const userInfo = {
         fullname: data.fullname,
         email: data.email,
-        password: data.password
+        password: data.password,
+        confirmpassword: data.confirmpassword
       }
-      const response = await axios.post('http://localhost:5002/api/user/signup', userInfo);
-      if (response.data) {
-        navigate('/login');
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
+      await axios.post('http://localhost:5002/api/user/signup', userInfo)
+              .then(res => {
+          console.log(res, 'res');
+          if(res.data){
+            toast.success("Signup successful!");
+            localStorage.setItem("chatApp", JSON.stringify(res.data));
+            setAuthUser(res.data);
+            navigate('/login');
+          }
+        })
+              .catch(err => {
+          console.log(err, 'err');
+          toast.error("Signup failed. Please try again.");
+        })
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

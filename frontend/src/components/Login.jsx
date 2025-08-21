@@ -1,31 +1,34 @@
-import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { toast } from 'react-toastify';
+import { useForm } from 'react-hook-form';
+import { useAuth } from '../context/AuthProvider';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+  const { setAuthUser } = useAuth();
+  const {
+    register,
+    handleSubmit, 
+    formState: { errors },
+  } = useForm({
+    mode: "onSubmit" // This shows validation errors only on submit
   });
-  const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:5002/api/user/login', formData);
+      const response = await axios.post('http://localhost:5002/api/user/login', data);
       if (response.data) {
-        navigate('/chat'); // Navigate to chat after successful login
+        console.log(response, 'res');
+        localStorage.setItem("chatApp", JSON.stringify(response.data));
+        setAuthUser(response.data);
+        toast.success("Login successful!");
+        navigate('/chat');
+        setAuthUser(response.data);
       }
     } catch (error) {
-      setError(error.response?.data?.message || 'Something went wrong');
+      console.log(error, 'err');
+      toast.error("Login failed. Please try again.");
     }
   };
 
@@ -42,12 +45,7 @@ export default function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-              {error}
-            </div>
-          )}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -58,12 +56,17 @@ export default function Login() {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  required
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#1877f2] focus:border-[#1877f2] sm:text-sm"
                   placeholder="Enter your email address"
+                  {...register("email", { 
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: "Invalid email address"
+                    }
+                  })}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#1877f2] focus:border-[#1877f2] sm:text-sm"
                 />
+                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>}
               </div>
             </div>
 
@@ -77,12 +80,13 @@ export default function Login() {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#1877f2] focus:border-[#1877f2] sm:text-sm"
                   placeholder="Enter your password"
+                  {...register("password", { 
+                    required: "Password is required"
+                  })}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-[#1877f2] focus:border-[#1877f2] sm:text-sm"
                 />
+                {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>}
               </div>
             </div>
 
