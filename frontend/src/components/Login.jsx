@@ -17,14 +17,15 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axios.post('http://localhost:5002/api/user/login', data);
+      const response = await axios.post('/api/user/login', data, {
+        withCredentials: true
+      });
       if (response.data) {
         console.log(response, 'res');
         localStorage.setItem("chatApp", JSON.stringify(response.data));
         setAuthUser(response.data);
         toast.success("Login successful!");
         navigate('/chat');
-        setAuthUser(response.data);
       }
     } catch (error) {
       console.log(error, 'err');

@@ -25,7 +25,9 @@ export default function Signup() {
         password: data.password,
         confirmpassword: data.confirmpassword
       }
-      await axios.post('http://localhost:5002/api/user/signup', userInfo)
+      await axios.post('/api/user/signup', userInfo, {
+        withCredentials: true
+      })
               .then(res => {
           console.log(res, 'res');
           if(res.data){
