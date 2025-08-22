@@ -66,4 +66,15 @@ const logout = async (req, res) => {
     }
 }
 
-export { signup, login, logout };
+const getUserProfile = async (req, res) => {
+    try {
+        const loggedInUser = req.user._id;
+        const filteredUsers = await User.find({_id: {$ne: loggedInUser}}).select("-password");
+        res.status(200).json({filteredUsers});
+    } catch (error) {
+        console.log(error,'allUsers');
+        res.status(500).json({message: "Error during get user profile", error: error});
+    }
+}
+
+export { signup, login, logout, getUserProfile };
