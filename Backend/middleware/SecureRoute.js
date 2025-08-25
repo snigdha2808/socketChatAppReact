@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/UserModels.js";
 
-const SecureToute = async (req, res, next) => {
+const SecureRoute = async (req, res, next) => {
     console.log('All cookies received:', req.cookies);
     const token = req.cookies.jwt;
     console.log('JWT token from cookie:', token);
@@ -25,4 +25,4 @@ const SecureToute = async (req, res, next) => {
     }
 }
 
-export default SecureToute;
+export default SecureRoute;

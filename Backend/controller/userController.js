@@ -1,4 +1,6 @@
+import mongoose from "mongoose";
 import User from "../models/UserModels.js";
+import Conversation from "../models/ConversationModel.js";
 import bcrypt from "bcryptjs";
 import { generateToken } from "../jwt/GenerateToken.js";
 
@@ -68,13 +70,88 @@ const logout = async (req, res) => {
 
 const getUserProfile = async (req, res) => {
     try {
-        const loggedInUser = req.user._id;
-        const filteredUsers = await User.find({_id: {$ne: loggedInUser}}).select("-password");
-        res.status(200).json({filteredUsers});
+        const loggedInUserId = req.user._id;
+        // Find all conversations where the logged-in user is a participant
+        const conversations = await Conversation.find({
+            participants: { $in: [loggedInUserId] }
+        });
+        
+        const conversationUserIds = new Set();
+        conversations.forEach(conversation => {
+            conversation.participants.forEach(participantId => {
+                if (participantId.toString() !== loggedInUserId.toString() && 
+                    mongoose.Types.ObjectId.isValid(participantId)) {
+                    conversationUserIds.add(participantId.toString());
+                    console.log('Added valid participant ID:', participantId);
+                } else {
+                    console.log('Skipped participant ID:', participantId, 'Reason: Same as logged in user or invalid ObjectId');
+                }
+            });
+        });
+            
+            console.log('Final conversationUserIds Set:', conversationUserIds);
+        const userIdsArray = Array.from(conversationUserIds);
+        console.log('Final userIdsArray:', userIdsArray);
+        
+        // Get user details for all conversation participants
+        let filteredUsers = [];
+        if (userIdsArray.length > 0) {
+            filteredUsers = await User.find({
+                _id: { $in: userIdsArray }
+            }).select("-password");
+        }
+        
+        res.status(200).json({
+            filteredUsers,
+            totalConversations: conversations.length,
+            message: "Users retrieved successfully"
+        });
     } catch (error) {
-        console.log(error,'allUsers');
-        res.status(500).json({message: "Error during get user profile", error: error});
+        console.log(error, 'getUserProfile');
+        res.status(500).json({message: "Error during get user profile", error: error.message});
     }
 }
 
-export { signup, login, logout, getUserProfile };
+const getAvailableUsers = async (req, res) => {
+    try {
+        const loggedInUserId = req.user._id;
+        console.log(loggedInUserId, 'loggedInUserId');
+        
+        // Find all conversations where the logged-in user is a participant
+        const conversations = await Conversation.find({
+            participants: { $in: [loggedInUserId] }
+        });
+        
+        // Extract user IDs from conversations
+        const conversationUserIds = new Set();
+        conversations.forEach(conversation => {
+            conversation.participants.forEach(participantId => {
+                // Validate that participantId is actually a valid user ID (not a message ID)
+                if (participantId.toString() !== loggedInUserId.toString() && 
+                    mongoose.Types.ObjectId.isValid(participantId)) {
+                    conversationUserIds.add(participantId.toString());
+                }
+            });
+        });
+        
+        // Get users who are NOT in conversations with the logged-in user
+        const availableUsers = await User.find({
+            _id: { 
+                $nin: [loggedInUserId, ...Array.from(conversationUserIds)]
+            }
+        }).select("-password");
+
+        console.log('availableUsers', availableUsers);
+        
+        res.status(200).json({
+            availableUsers,
+            totalAvailable: availableUsers.length,
+            message: "Available users retrieved successfully"
+        });
+    } catch (error) {
+        console.log(error, 'getAvailableUsers');
+        res.status(500).json({message: "Error getting available users", error: error});
+    }
+}
+
+export { signup, login, logout, getUserProfile, getAvailableUsers };

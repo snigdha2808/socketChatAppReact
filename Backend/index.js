@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/UserRoute.js";
 import cors from "cors";
+import messageRoutes from "./routes/MessageRoute.js";
 
 const app = express();
 dotenv.config();
@@ -32,7 +33,7 @@ try{
 }
 
 app.use("/api/user", userRoutes);
-
+app.use("/api/message", messageRoutes);
 app.get('/', (req, res) => {
     res.send("Hello World")
 })
